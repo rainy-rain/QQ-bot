@@ -116,3 +116,28 @@ dsh plugin --profile desktop add dsh-onebot-qq
 - 第三方协议登录有风控风险，**只用小号**，前三天别进群刷屏、别秒回、别复读
 - WebUI / OneBot 端口只绑 `127.0.0.1`，不要暴露到公网
 - 群聊默认关闭（`groupPolicy: disabled`），要开的话建议配合 `requireMention: true`
+
+## 六、常驻与自启动（踩过的坑）
+
+NapCat 必须是**独立进程**，不能挂在 DSH 的命令执行树下。
+
+曾经发生：NapCat 由 DSH 的一次命令启动 → 落在 DSH 命令执行的 job object 里 → 关闭 / 重启 DSH 桌面应用时 job 被终止，NapCat 一起被杀，QQ 掉线（日志里表现为 `OneBot disconnected` + `dsh desktop host exited`）。
+
+现在的做法：
+
+1. `scripts/start-napcat.ps1` 用 **WMI `Win32_Process.Create`** 创建进程，父进程是 `WmiPrvSE` 而不是当前 shell，因此脱离 job object，DSH 怎么重启都不影响它。
+2. 开机自启：用户级启动目录里放快捷方式，指向 `D:\NapCatRun\napcat-service.bat`（该脚本带 `-q <小号UIN>` 做快速登录）：
+   ```
+   %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\NapCat-qqbot.lnk
+   ```
+   不需要管理员权限。
+3. 计划任务（`schtasks /sc onlogon /rl highest`）需要管理员权限，本机被拒绝，才改用启动目录快捷方式。
+
+> 快速登录偶尔会要求「手Q验证」。遇到时 NapCat 退回二维码，去 WebUI 扫一次即可；扫过之后一段时间内通常能直接快速登录。
+
+## 七、关机 / 重启后的正常顺序
+
+1. 开机后 NapCat 由启动项自动拉起（约 20 秒）
+2. 打开 DSH 桌面应用
+3. 插件在 1 分钟内自动连上（退避重试，最长 60 秒一次）
+4. 用 `scripts/status.ps1` 一次确认：进程 / 端口 / 连接 / 登录号
