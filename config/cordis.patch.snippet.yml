@@ -1,0 +1,33 @@
+# 把这个块合并进：
+#   C:\Users\<你>\.dsh\profiles\<profile>\cordis.patch.yml
+# 顶层数组末尾。改完保存即自动热重载（插件 fiber 秒级重启，QQ 桥断一下自动重连）。
+- id: dsh-onebot
+  name: dsh-onebot-qq
+  config:
+    # 连接：forward = 插件主动连 NapCat 的 WS 服务端
+    mode: forward
+    url: ws://127.0.0.1:3001
+    # 必须与 NapCat 的 onebot11_<uin>.json 里的 token 一致
+    accessToken: dsh-onebot-local
+    # 小号 QQ（留空则从 meta 事件自动学习）
+    botQQ: '1507001621'
+
+    # 权限：dmPolicy=open 表示「只有 adminUsers 里的人能私聊」
+    adminUsers:
+      - '398223912'
+    dmPolicy: open
+    # 群聊先关闭；要开改成 allowlist 并配 groupAllowFrom，或 open + requireMention
+    groupPolicy: disabled
+    requireMention: true
+
+    # 工作区与人设（本目录）
+    workspacePath: 'D:\DSHfile\QQbot'
+    # 入站图片/语音/会话映射落盘位置（放 D 盘，便于清理，不占 C 盘）
+    mediaDir: 'D:\DSHfile\QQbot\media\onebot'
+    tempTtlHours: 24
+
+    # 行为
+    newMessagePolicy: queue      # 任务运行中新消息排队，结束后依次处理
+    interimMessages: true        # 工具调用之间的中间文本实时发送
+    rateLimitPerMinute: 30
+    logLevel: info

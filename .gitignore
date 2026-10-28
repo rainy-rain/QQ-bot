@@ -1,0 +1,21 @@
+# 运行时数据（不进版本库）
+media/onebot/media_*
+media/onebot/*.amr
+media/onebot/*.wav
+media/onebot/*.mp4
+media/onebot/qq-trace.jsonl
+media/onebot/qq-inbox.jsonl
+media/onebot/qq-actions.log
+media/onebot/deferred-delivery.jsonl
+data/
+
+# 密钥
+.env
+*.secret
+config/*.local.yml
+
+# 系统
+Thumbs.db
+desktop.ini
+media/onebot/*.json
+media/onebot/**/*.json
