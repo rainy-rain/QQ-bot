@@ -1,0 +1,5 @@
+# 批处理必须 CRLF，否则 cmd 会把多行拼成一行（踩过：LF 的 .bat 报 '5001' 不是内部命令）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+# PowerShell 脚本用 CRLF + UTF-8 BOM 最稳（PS 5.1 读无 BOM 的 UTF-8 会乱中文）
+*.ps1 text eol=crlf
