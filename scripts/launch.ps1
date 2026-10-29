@@ -35,6 +35,17 @@ Write-Host '======================================' -ForegroundColor DarkCyan
 Write-Host '  QQbot  ·  QQ 小号虚拟人物 启动器'      -ForegroundColor DarkCyan
 Write-Host '======================================' -ForegroundColor DarkCyan
 
+# ---------------------------------------------------------------- 0. 环境自检
+Write-Step 0 '环境自检'
+$check = Join-Path $PSScriptRoot 'check-env.ps1'
+& powershell -NoProfile -ExecutionPolicy Bypass -File $check
+if ($LASTEXITCODE -eq 2) {
+  Write-Host ''
+  Write-Host '  关键组件缺失，已中止启动。补齐后重新双击即可。' -ForegroundColor Red
+  Write-Host ''
+  exit 2
+}
+
 # ---------------------------------------------------------------- 1. NapCat
 Write-Step 1 '检查 NapCat（QQ 登录进程）...'
 $napcat = Get-NapCatProcess
