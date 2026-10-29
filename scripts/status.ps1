@@ -1,4 +1,4 @@
-# 一键看状态：NapCat 进程 / 端口 / 登录态 / 插件连接
+﻿# 一键看状态：NapCat 进程 / 端口 / 登录态 / 插件连接
 $root = 'D:\NapCatRun'
 Write-Host '=== NapCat 进程 ==='
 Get-CimInstance Win32_Process -Filter "Name='node.exe'" |

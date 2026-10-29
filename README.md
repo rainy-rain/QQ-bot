@@ -117,27 +117,35 @@ dsh plugin --profile desktop add dsh-onebot-qq
 - WebUI / OneBot 端口只绑 `127.0.0.1`，不要暴露到公网
 - 群聊默认关闭（`groupPolicy: disabled`），要开的话建议配合 `requireMention: true`
 
-## 六、常驻与自启动（踩过的坑）
+## 六、启动与停止：双击 `QQbot.bat`
 
-NapCat 必须是**独立进程**，不能挂在 DSH 的命令执行树下。
+**不做开机自启**（已把启动目录的快捷方式删掉），什么时候开这个聊天服务由你决定。
 
-曾经发生：NapCat 由 DSH 的一次命令启动 → 落在 DSH 命令执行的 job object 里 → 关闭 / 重启 DSH 桌面应用时 job 被终止，NapCat 一起被杀，QQ 掉线（日志里表现为 `OneBot disconnected` + `dsh desktop host exited`）。
+```
+D:\DSHfile\QQbot\QQbot.bat         ← 双击启动（会依次做下面 4 件事）
+D:\DSHfile\QQbot\QQbot-stop.bat    ← 双击停止（只停 QQ，不关 DSH，不碰你主号）
+```
 
-现在的做法：
+`QQbot.bat` 做的事：
 
-1. `scripts/start-napcat.ps1` 用 **WMI `Win32_Process.Create`** 创建进程，父进程是 `WmiPrvSE` 而不是当前 shell，因此脱离 job object，DSH 怎么重启都不影响它。
-2. 开机自启：用户级启动目录里放快捷方式，指向 `D:\NapCatRun\napcat-service.bat`（该脚本带 `-q <小号UIN>` 做快速登录）：
-   ```
-   %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\NapCat-qqbot.lnk
-   ```
-   不需要管理员权限。
-3. 计划任务（`schtasks /sc onlogon /rl highest`）需要管理员权限，本机被拒绝，才改用启动目录快捷方式。
+1. 查 NapCat 是否在跑，没跑就用 **WMI `Win32_Process.Create`** 拉起（父进程是 `WmiPrvSE`，脱离 DSH 命令的 job object —— 这样关掉黑窗口、重启 DSH 都不会把 QQ 一起带走）
+2. 查 DSH 桌面应用是否在跑，没跑就启动它（插件跑在宿主里）
+3. 等 QQ 上线 + 插件连上，最多 90 秒
+4. 打印状态表；如果 QQ 登录态失效需要扫码，**自动打开 WebUI 扫码页**
+
+判断逻辑（省得你等 90 秒）：刚启动的 NapCat 给 30 秒做快速登录；已经在跑却只有 WebUI 6099、没有 OneBot 3001，就直接判定「需要扫码」并打开浏览器。
+
+扫描用的是**小号**的手机 QQ，扫完立刻点允许登录；然后再双击一次 `QQbot.bat`，看到「OK QQbot 已就绪」即可。
+
+> 为什么不做开机自启：启动时机由你控制更可控（比如你本机关机、或者不想让 QQ 一直挂着）；而且 `schtasks /sc onlogon /rl highest` 在这台机器上没有管理员权限被拒绝过。
+
+## 七、每天的常规流程
+
+| 场景 | 操作 |
+|---|---|
+| 想用聊天服务了 | 双击 `QQbot.bat`，等它说「已就绪」 |
+| 提示需要扫码 | 它会自动弹 WebUI，用**小号**扫码，扫完再双击一次 |
+| 不想挂了 | 双击 `QQbot-stop.bat`（或直接关掉 QQ 那个窗口） |
+| 出问题 | 双击 `scripts\status.ps1` 看进程/端口/连接/登录号 |
 
 > 快速登录偶尔会要求「手Q验证」。遇到时 NapCat 退回二维码，去 WebUI 扫一次即可；扫过之后一段时间内通常能直接快速登录。
-
-## 七、关机 / 重启后的正常顺序
-
-1. 开机后 NapCat 由启动项自动拉起（约 20 秒）
-2. 打开 DSH 桌面应用
-3. 插件在 1 分钟内自动连上（退避重试，最长 60 秒一次）
-4. 用 `scripts/status.ps1` 一次确认：进程 / 端口 / 连接 / 登录号

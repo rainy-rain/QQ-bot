@@ -1,4 +1,4 @@
-# 启动 NapCat（脱离当前进程树，DSH 关闭 / 命令窗口关闭都不会带走它）
+﻿# 启动 NapCat（脱离当前进程树，DSH 关闭 / 命令窗口关闭都不会带走它）
 # 用法: .\start-napcat.ps1 [-Quick 1507001621]
 param(
   [string]$Quick = '1507001621'

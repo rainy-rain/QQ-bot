@@ -1,4 +1,4 @@
-# 停止 NapCat（只杀 D:\NapCatRun 下的进程，不碰你本机的 QQ）
+﻿# 停止 NapCat（只杀 D:\NapCatRun 下的进程，不碰你本机的 QQ）
 $root = 'D:\NapCatRun'
 $killed = 0
 Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
