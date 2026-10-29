@@ -54,7 +54,7 @@ D:\NapCatRun\app\    实际程序（napcat.bat 在这里…见脚本）
 
 ### 1. 装 NapCat（工作区外）
 
-1. 下载 `NapCat.Shell.Windows.Node.zip` 并解压到 `D:\NapCatRun`（**解压，不要从工作区移动过来**，否则继承低完整性标签）。安装包留了一份在 `D:\NapCatRun\_installer\`，重装时直接用
+1. 下载 `NapCat.Shell.Windows.Node.zip` 并解压到 `D:\NapCatRun`（**解压，不要从工作区移动过来**，否则继承低完整性标签）。安装包用完可删，重装时从 [NapCat Releases](https://github.com/NapNeko/NapCatQQ/releases) 重新下载（当前版本 v4.18.41）
 2. 双击 `D:\NapCatRun\napcat.bat`
 3. 打开 WebUI，用**小号**手机 QQ 扫码登录
    - WebUI：`http://127.0.0.1:6099/webui?token=<看启动日志>`
