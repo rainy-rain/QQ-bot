@@ -122,27 +122,27 @@ dsh plugin --profile desktop add dsh-onebot-qq
 **不做开机自启**（已把启动目录的快捷方式删掉），什么时候开这个聊天服务由你决定。
 
 ```
-D:\DSHfile\QQbot\QQbot.bat         ← 双击启动（会依次做下面 5 件事）
+D:\DSHfile\QQbot\QQbot.bat         ← 双击启动（自检 + 拉起服务，全在这一个文件里）
 D:\DSHfile\QQbot\QQbot-stop.bat    ← 双击停止（只停 QQ，不关 DSH，不碰你主号）
-D:\DSHfile\QQbot\QQbot-check.bat   ← 只做环境自检，不启动任何东西
 ```
 
 `QQbot.bat` 做的事：
 
-0. **环境自检**：逐项检查下面这些东西，有缺的直接说缺什么；缺关键组件就中止启动
+0. **环境自检**（纯 batch 内联，无额外文件）：逐项检查，有缺的直接说缺什么；缺关键组件就中止启动
    - NapCat 主程序（`napcat.bat` / `node.exe` / `wrapper.node` / `index.js`）
    - 小号登录配置 `onebot11_<UIN>.json`
    - DSH 桌面应用
    - `dsh-onebot-qq` 插件及其在 `cordis.patch.yml` 里的配置段
-   - 端口 3001 / 6099 是否被别的进程占了
+   - 端口 3001 / 6099（`[--]` 表示已被占用，通常是 NapCat 自己在跑，不算错误）
    - 可选：ffmpeg / whisper（语音转写，缺了不影响文字和图片）
-   - D 盘剩余空间
 1. 查 NapCat 是否在跑，没跑就用 **WMI `Win32_Process.Create`** 拉起（父进程是 `WmiPrvSE`，脱离 DSH 命令的 job object —— 这样关掉黑窗口、重启 DSH 都不会把 QQ 一起带走）
 2. 查 DSH 桌面应用是否在跑，没跑就启动它（插件跑在宿主里）
 3. 等 QQ 上线 + 插件连上，最多 90 秒
 4. 打印状态表；如果 QQ 登录态失效需要扫码，**自动打开 WebUI 扫码页**
 
-自检结果三种状态：`OK` 通过、`WARN` 可选组件缺失（照常启动）、`FAIL` 关键缺失（中止并说明缺什么）。
+自检标记含义：`[OK]` 通过、`[WARN]` 可选组件缺失（照常启动）、`[FAIL]` 关键缺失（中止并说明缺什么）、`[--]` 仅提示（如端口已被 NapCat 占用）。
+
+> 改 `.bat` 的注意事项：文件必须是 **UTF-8 无 BOM + CRLF 换行**，开头有 `chcp 65001` 才能正确显示中文；用 LF 会让 cmd 把多行拼成一行报错。`.ps1` 相反，必须是 **UTF-8 with BOM**，否则 PowerShell 5.1 读中文会乱码并语法报错。
 
 判断逻辑（省得你等 90 秒）：刚启动的 NapCat 给 30 秒做快速登录；已经在跑却只有 WebUI 6099、没有 OneBot 3001，就直接判定「需要扫码」并打开浏览器。
 
